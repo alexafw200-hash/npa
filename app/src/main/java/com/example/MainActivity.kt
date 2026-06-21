@@ -270,11 +270,11 @@ fun MainScreen(onDownloadClick: (String) -> Unit) {
             OutlinedButton(
                 onClick = {
                     isUpdating = true
-                    scope.launch {
+                    scope.launch(Dispatchers.IO) {
                         try {
                             com.yausername.youtubedl_android.YoutubeDL.getInstance().updateYoutubeDL(context)
-                            isUpdating = false
                             withContext(Dispatchers.Main) {
+                                isUpdating = false
                                 Toast.makeText(
                                     context,
                                     "Engine updated successfully!",
@@ -283,8 +283,8 @@ fun MainScreen(onDownloadClick: (String) -> Unit) {
                             }
                         } catch (e: Exception) {
                             e.printStackTrace()
-                            isUpdating = false
                             withContext(Dispatchers.Main) {
+                                isUpdating = false
                                 Toast.makeText(
                                     context,
                                     "Update failed",
