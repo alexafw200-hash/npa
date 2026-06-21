@@ -12,7 +12,7 @@ android {
 
   defaultConfig {
     applicationId = "com.aistudio.ytdlp.ntive"
-    minSdk = 24
+    minSdk = 30
     targetSdk = 36
     versionCode = 1
     versionName = "1.0"
@@ -44,6 +44,7 @@ android {
       signingConfig = signingConfigs.getByName("release")
     }
     debug {
+      signingConfig = signingConfigs.getByName("debugConfig")
     }
   }
   compileOptions {
@@ -99,6 +100,8 @@ dependencies {
   implementation(libs.okhttp)
   // implementation(libs.play.services.location)
   implementation(libs.retrofit)
+  implementation("com.github.yausername.youtubedl-android:library:0.14.0")
+  implementation("com.github.yausername.youtubedl-android:ffmpeg:0.14.0")
   testImplementation(libs.androidx.compose.ui.test.junit4)
   testImplementation(libs.androidx.core)
   testImplementation(libs.androidx.junit)

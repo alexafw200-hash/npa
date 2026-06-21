@@ -1,6 +1,7 @@
 package com.example
 
 import android.Manifest
+import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Build
@@ -28,6 +29,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Download
+import androidx.compose.material.icons.filled.ContentPaste
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -72,11 +74,6 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
-
-        // Write raw files from assets to files directory initially
-        Thread {
-            AppUtils.initAssets(this@MainActivity)
-        }.start()
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             if (ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
@@ -205,7 +202,19 @@ fun MainScreen(onDownloadClick: (String) -> Unit) {
                         modifier = Modifier.fillMaxWidth(),
                         singleLine = false,
                         maxLines = 4,
-                        shape = RoundedCornerShape(12.dp)
+                        shape = RoundedCornerShape(12.dp),
+                        trailingIcon = {
+                            androidx.compose.material3.IconButton(
+                                onClick = {
+                                    val clipboardManager = context.getSystemService(Context.CLIPBOARD_SERVICE) as android.content.ClipboardManager
+                                    if (clipboardManager.hasPrimaryClip()) {
+                                        urlText = clipboardManager.primaryClip?.getItemAt(0)?.text.toString()
+                                    }
+                                }
+                            ) {
+                                Icon(Icons.Default.ContentPaste, contentDescription = "Paste from clipboard")
+                            }
+                        }
                     )
 
                     Button(
@@ -262,14 +271,26 @@ fun MainScreen(onDownloadClick: (String) -> Unit) {
                 onClick = {
                     isUpdating = true
                     scope.launch {
-                        val success = YtDlpEngine.updateEngine(context)
-                        isUpdating = false
-                        withContext(Dispatchers.Main) {
-                            Toast.makeText(
-                                context,
-                                if (success) "Engine updated successfully!" else "Update failed",
-                                Toast.LENGTH_SHORT
-                            ).show()
+                        try {
+                            com.yausername.youtubedl_android.YoutubeDL.getInstance().updateYoutubeDL(context)
+                            isUpdating = false
+                            withContext(Dispatchers.Main) {
+                                Toast.makeText(
+                                    context,
+                                    "Engine updated successfully!",
+                                    Toast.LENGTH_SHORT
+                                ).show()
+                            }
+                        } catch (e: Exception) {
+                            e.printStackTrace()
+                            isUpdating = false
+                            withContext(Dispatchers.Main) {
+                                Toast.makeText(
+                                    context,
+                                    "Update failed",
+                                    Toast.LENGTH_SHORT
+                                ).show()
+                            }
                         }
                     }
                 },
